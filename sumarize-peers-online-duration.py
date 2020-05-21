@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 import asyncio
+import collections
 import json
 import os
 import os.path
 import sys
 import shutil
-import threading
 import time
 import websockets # pip3 install websockets
 
@@ -37,17 +37,37 @@ update it per hour, if there's new peers online, insert it, if existting peers'r
 sumarized_report = "sumarized_report.json"
 backup_sumarized_report = "/home/sumarized_report_backup.json"
 
-def read_data(path):
+def read_data():
     data = '{}'
 
-    if not os.path.isfile(sumarized_report):
-        open(sumarized_report, "w").close
-    else:
-        f = open(path, "r")
+    if os.path.isfile(backup_sumarized_report) and os.path.isfile(sumarized_report):
+        # both files exist, just read sumarized_report
+        f = open(backup_sumarized_report, "r")
         data = f.read()
         if data == "":
             data = '{}'
         f.close()
+    elif os.path.isfile(backup_sumarized_report) and not os.path.isfile(sumarized_report):
+        # just backup file exists, and copy it as sumarized_report
+        shutil.copy2(backup_sumarized_report, sumarized_report)
+
+        # read data from backup_sumarized_report,
+        f = open(backup_sumarized_report, "r")
+        data = f.read()
+        if data == "":
+            data = '{}'
+        f.close()
+    elif not os.path.isfile(backup_sumarized_report) and os.path.isfile(sumarized_report):
+        # just backup file do not exist, just read data from sumarized_report,
+        # and backup file will be copy later
+        f = open(sumarized_report, "r")
+        data = f.read()
+        if data == "":
+            data = '{}'
+        f.close()
+    else:
+        # both files do not exist, just create sumarized_report
+        open(sumarized_report, "w").close
 
     os.chmod(sumarized_report, 0o777)
     return json.loads(data)
@@ -88,7 +108,7 @@ async def update_peers_online_status():
     updated_times = 0
 
     while True:
-        report = read_data(sumarized_report)
+        report = read_data()
         current_status = {}
         for peer in peers:
             status = await get_networkState(peer['peer_address'], peer['param'])
@@ -100,6 +120,8 @@ async def update_peers_online_status():
 
         # save it to file
         new_report = filter_peers_status(current_status, report)
+        # sorted by duration
+        new_report = collections.OrderedDict(sorted(new_report.items(), key = lambda x: x[1]['duration'], reverse=True)) 
         new_report = json.dumps(new_report)
         write_data(sumarized_report, new_report)
 
@@ -107,7 +129,7 @@ async def update_peers_online_status():
         updated_times += 1
         print(f"updated times: {updated_times}")
 
-        time.sleep(60 * 5) # update it per 5 minutes
+        time.sleep(60 * 3) # update it per 3 minutes
 
 if __name__ == "__main__":
     try:
