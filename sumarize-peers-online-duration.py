@@ -47,6 +47,7 @@ def read_data(path):
             data = '{}'
         f.close()
 
+    os.chmod(sumarized_report, 0o777)
     return json.loads(data)
 
 def write_data(path, data):
