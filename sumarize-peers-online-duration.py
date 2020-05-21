@@ -5,6 +5,7 @@ import json
 import os
 import os.path
 import sys
+import shutil
 import threading
 import time
 import websockets # pip3 install websockets
@@ -34,6 +35,7 @@ update it per hour, if there's new peers online, insert it, if existting peers'r
 """
 # file name
 sumarized_report = "sumarized_report.json"
+backup_sumarized_report = "/home/sumarized_report_backup.json"
 
 def read_data(path):
     data = '{}'
@@ -100,8 +102,11 @@ async def update_peers_online_status():
         new_report = filter_peers_status(current_status, report)
         new_report = json.dumps(new_report)
         write_data(sumarized_report, new_report)
+
+        shutil.copy2(sumarized_report, backup_sumarized_report) # back it up every 5 minutes
         updated_times += 1
         print(f"updated times: {updated_times}")
+
         time.sleep(60 * 5) # update it per 5 minutes
 
 if __name__ == "__main__":
