@@ -98,6 +98,8 @@ def filter_peers_status(current_status, all_status):
     for curr_id in current_peers_id:
         if curr_id in all_peers_id:
             all_status[curr_id]['duration'] += 1
+            # update peer network id
+            all_status[curr_id]['peer_version'] = current_status[curr_id]
         else:
             new_status = { f"{curr_id}": { "peer_version": f"{current_status[curr_id]}", "duration": 1 }}
             all_status.update(new_status)
