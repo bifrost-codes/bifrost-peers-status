@@ -24,6 +24,13 @@ peers = [
     {"peer_address": "wss://n1.testnet.liebi.com", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
     {"peer_address": "wss://n2.testnet.liebi.com", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
     {"peer_address": "wss://n3.testnet.liebi.com", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
+    {"peer_address": "ws://n4.testnet.liebi.com:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
+    {"peer_address": "ws://n5.testnet.liebi.com:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
+    {"peer_address": "ws://180.153.57.47:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
+    {"peer_address": "ws://36.111.41.35:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
+    {"peer_address": "ws://47.101.139.226:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
+    {"peer_address": "ws://47.113.188.132:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
+    # {"peer_address": "ws://36.111.41.50:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
 ]
 
 """
@@ -80,14 +87,17 @@ def write_data(path, data):
 
 async def get_networkState(peer_id, param):
     status = {}
-    async with websockets.connect(peer_id) as websocket:
-        await websocket.send(param)
+    try:
+        async with websockets.connect(peer_id) as websocket:
+            await websocket.send(param)
 
-        resp = await websocket.recv()
-        resp = json.loads(resp)
-        for peer_id, val in resp['result']['connectedPeers'].items():
-            if peer_id not in boot_nodes_id: # need to filter boot nodes
-                status.update({f"{peer_id}": f"{val['versionString']}"})
+            resp = await websocket.recv()
+            resp = json.loads(resp)
+            for peer_id, val in resp['result']['connectedPeers'].items():
+                if peer_id not in boot_nodes_id: # need to filter boot nodes
+                    status.update({f"{peer_id}": f"{val['versionString']}"})
+    except:
+        print("peer is down: ", peer_id)
     
     return status
 
