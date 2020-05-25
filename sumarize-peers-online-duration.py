@@ -30,7 +30,11 @@ peers = [
     {"peer_address": "ws://36.111.41.35:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
     {"peer_address": "ws://47.101.139.226:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
     {"peer_address": "ws://47.113.188.132:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
-    # {"peer_address": "ws://36.111.41.50:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
+    {"peer_address": "ws://36.111.41.50:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
+    {"peer_address": "ws://36.111.35.66:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
+    {"peer_address": "ws://119.3.28.151:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
+    {"peer_address": "ws://159.89.147.233:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
+    {"peer_address": "ws://125.94.83.242:9944", "param": '{"id":1, "jsonrpc":"2.0", "method": "system_networkState", "params": []}'},
 ]
 
 """
@@ -88,16 +92,17 @@ def write_data(path, data):
 async def get_networkState(peer_id, param):
     status = {}
     try:
-        async with websockets.connect(peer_id) as websocket:
-            await websocket.send(param)
+        # async with websockets.connect(peer_id, close_timeout=5) as websocket:
+        websocket = await asyncio.wait_for(websockets.connect(peer_id), 10)
+        await websocket.send(param)
 
-            resp = await websocket.recv()
-            resp = json.loads(resp)
-            for peer_id, val in resp['result']['connectedPeers'].items():
-                if peer_id not in boot_nodes_id: # need to filter boot nodes
-                    status.update({f"{peer_id}": f"{val['versionString']}"})
+        resp = await websocket.recv()
+        resp = json.loads(resp)
+        for peer_id, val in resp['result']['connectedPeers'].items():
+            if peer_id not in boot_nodes_id: # need to filter boot nodes
+                status.update({f"{peer_id}": f"{val['versionString']}"})
     except:
-        print("peer is down: ", peer_id)
+        print("peer is down: ", peer_id, "at: ", time.time())
     
     return status
 
@@ -117,35 +122,48 @@ def filter_peers_status(current_status, all_status):
     return all_status
 
 async def update_peers_online_status():
-    updated_times = 0
+    report = read_data()
+    current_status = {}
+    for peer in peers:
+        status = {}
+        print("get peer: ", peer['peer_address'])
+        t1 = time.time()
 
-    while True:
-        report = read_data()
-        current_status = {}
-        for peer in peers:
+        try:
             status = await get_networkState(peer['peer_address'], peer['param'])
-            current_status.update(status)
-            # ensure these peers doesn't have the same remote peer
-            for peer_id, version in status.items():
-                if peer_id not in current_status.keys():
-                    current_status.update({f"{peer_id}": f"{val}"})
+        except:
+            print("failed to create websocket client.")
+            
+        print(f"{peer['peer_address']} time cost: {time.time() - t1}")
+        current_status.update(status)
+        # ensure these peers doesn't have the same remote peer
+        for peer_id, version in status.items():
+            if peer_id not in current_status.keys():
+                current_status.update({f"{peer_id}": f"{val}"})
 
-        # save it to file
-        new_report = filter_peers_status(current_status, report)
-        # sorted by duration
-        new_report = collections.OrderedDict(sorted(new_report.items(), key = lambda x: x[1]['duration'], reverse=True)) 
-        new_report = json.dumps(new_report)
-        write_data(sumarized_report, new_report)
+    # save it to file
+    new_report = filter_peers_status(current_status, report)
+    # sorted by duration
+    new_report = collections.OrderedDict(sorted(new_report.items(), key = lambda x: x[1]['duration'], reverse=True)) 
+    new_report = json.dumps(new_report)
+    write_data(sumarized_report, new_report)
 
-        shutil.copy2(sumarized_report, backup_sumarized_report) # back it up every 5 minutes
-        updated_times += 1
-        print(f"updated times: {updated_times}")
-
-        time.sleep(60 * 3) # update it per 3 minutes
+    shutil.copy2(sumarized_report, backup_sumarized_report) # back it up every 5 minutes
 
 if __name__ == "__main__":
     try:
-        asyncio.get_event_loop().run_until_complete(update_peers_online_status())
+        updated_times = 0
+        while True:
+            t1 = time.time()
+            try:
+                asyncio.get_event_loop().run_until_complete(update_peers_online_status())
+            except:
+                print("some exception happened.")
+            updated_times += 1
+            t2 = time.time()
+            print(f"updated times: {updated_times}")
+            print(f"time cost: {t2 - t1}")
+            time.sleep(60 * 3)
     except KeyboardInterrupt:
         print('going to exit.')
         try:
