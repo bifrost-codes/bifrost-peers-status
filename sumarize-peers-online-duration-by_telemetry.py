@@ -40,8 +40,7 @@ update it per hour, if there's new peers online, insert it, if existting peers'r
 """
 # file name
 sumarized_report = "sumarized_report.json"
-# backup_sumarized_report = "/home/sumarized_report_backup.json"
-backup_sumarized_report = "sumarized_report_backup.json"
+backup_sumarized_report = "/home/sumarized_report_backup.json"
 
 telemetry_feed = ("wss://telemetry.polkadot.io/feed/", "{}")
 bifrost_chain_id = "Bifrost Asgard CC1"
