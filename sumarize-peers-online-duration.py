@@ -12,11 +12,11 @@ import websockets # pip3 install websockets
 
 
 boot_nodes_id = [
-    "QmPQUbcEfMskoQBfsinAU354f3P91ENa3pcaDJsLwXbM2o",
-    "QmSUwR4ppe9sB4VQCuy3itB7A2BF8BcfweLsVz83bh1vPy",
-    "QmYTccenokf4hmTvpzpgrNK2UxYngNHjXguuGTkZTW8aF3",
-    "Qmbpc8jNDoZVBxW4ZZGAgVUzgyUcFPrKxHvTAafjjwRVFp",
-    "QmTKx4x4TCj6ptoe22Nfqr8FiCtMCicwbY34KcGt4xMvKC"
+    "12D3KooWHjmfpAdrjL7EvZ7Zkk4pFmkqKDLL5JDENc7oJdeboxJJ",
+    "12D3KooWBMjifHHUZxbQaQZS9t5jMmTDtZbugAtJ8TG9RuX4umEY",
+    "12D3KooWLt3w5tadCR5Fc7ZvjciLy7iKJ2ZHq6qp4UVmUUHyCJuX",
+    "12D3KooWMduQkmRVzpwxJuN6MQT4ex1iP9YquzL4h5K9Ru8qMXtQ",
+    "12D3KooWLAHZyqMa9TQ1fR7aDRRKfWt857yFMT3k2ckK9mhYT9qR"
 ]
 
 # boot nodes
