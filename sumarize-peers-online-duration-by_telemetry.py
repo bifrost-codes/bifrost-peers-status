@@ -43,8 +43,8 @@ sumarized_report = "sumarized_report.json"
 backup_sumarized_report = "sumarized_report_backup.json"
 
 telemetry_feed = ("wss://telemetry.polkadot.io/feed/", "{}")
-bifrost_chain_id = "Bifrost Asgard CC1"
-network_state_api = "https://telemetry.polkadot.io/network_state/Bifrost%20Asgard%20CC1/"
+bifrost_chain_id = "Bifrost Asgard CC2"
+network_state_api = "https://telemetry.polkadot.io/network_state/Bifrost%20Asgard%20CC2/"
 odd = False
 
 my_lock = asyncio.Lock()
